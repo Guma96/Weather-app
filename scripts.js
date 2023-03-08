@@ -1,49 +1,69 @@
-function getWeatherForCity(cityname) {
-  let url = `https://api.openweathermap.org/data/2.5/weather?q=${cityname}&units=metric&appid=e6c18f92c0b1eb2535ace7c6c9bee521`;
-  var request = new XMLHttpRequest();
-  request.open("GET", url);
-  request.send();
-  request.onload = () => {
-    displayData(JSON.parse(request.response));
-  };
-}
+const container = document.querySelector(".container");
+const search = document.querySelector(".search-box button");
+const weatherBox = document.querySelector(".weather-box");
+const weatherDetails = document.querySelector(".weather-details");
+const error404 = document.querySelector(".not-found");
 
-function displayData(data) {
-  console.log(data);
-  if (
-    document.getElementById("city-input").value != "" &&
-    data != [] &&
-    data["cod"] != 404
-  ) {
-    document.getElementById("weather-info").style.display = "flex";
-  }
+search.addEventListener("click", () => {
+  const APIKey = "a5d9781f30d813a1295f5385f15e4be4";
+  const city = document.querySelector(".search-box input").value;
 
-  let temperatures = data["main"];
-  let currentTemperature = Math.round(temperatures["temp"] * 10) / 10;
-  let minTemperature = Math.round(temperatures["temp_min"] * 10) / 10;
-  let maxTemperature = Math.round(temperatures["temp_max"] * 10) / 10;
+  if (city === "") return;
 
-  let rainStatus = data["weather"][0]["description"];
+  fetch(
+    `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${APIKey}`
+  )
+    .then((response) => response.json())
+    .then((json) => {
+      if (json.cod === "404") {
+        container.style.height = "400px";
+        weatherBox.style.display = "none";
+        weatherDetails.style.display = "none";
+        error404.style.display = "block";
+        error404.classList.add("fadeIn");
+        return;
+      }
 
-  let windSpeed = data["wind"]["speed"];
+      error404.style.display = "none";
+      error404.classList.remove("fadeIn");
 
-  document.getElementById("current-temperature").innerHTML =
-    currentTemperature + "°C";
-  document.getElementById("min-temperature").innerHTML = minTemperature + "°C";
-  document.getElementById("max-temperature").innerHTML = maxTemperature + "°C";
+      const image = document.querySelector(".weather-box img");
+      const temperature = document.querySelector(".weather-box .temperature");
+      const description = document.querySelector(".weather-box .description");
+      const humidity = document.querySelector(
+        ".weather-details .humidity span"
+      );
+      const wind = document.querySelector(".weather-details .wind span");
 
-  document.getElementById("rain-description").innerHTML = rainStatus;
+      switch (json.weather[0].main) {
+        case "Clear":
+          image.src = "images/clear.png";
+          break;
+        case "Rain":
+          image.src = "images/rain.png";
+          break;
+        case "Snow":
+          image.src = "images/snow.png";
+          break;
+        case "Clouds":
+          image.src = "images/cloud.png";
+          break;
+        case "Haze":
+          image.src = "images/haze.png";
+          break;
+        default:
+          image.src = "";
+      }
 
-  document.getElementById("windspeed-info").innerHTML = windSpeed + "km/h";
-  console.log(data);
-}
+      temperature.innerHTML = `${parseInt(json.main.temp)}<span>°C</span>`;
+      description.innerHTML = `${json.weather[0].description}`;
+      humidity.innerHTML = `${json.main.humidity}%`;
+      wind.innerHTML = `${parseInt(json.wind.speed)}Km/h`;
 
-document
-  .getElementById("city-input")
-  .addEventListener("keyup", function (event) {
-    event.preventDefault();
-    if (event.key == "Enter") {
-      let cityInput = document.getElementById("city-input").value;
-      getWeatherForCity(cityInput);
-    }
-  });
+      weatherBox.style.display = "";
+      weatherDetails.style.display = "";
+      weatherBox.classList.add("fadeIn");
+      weatherDetails.classList.add("fadeIn");
+      container.style.height = "590px";
+    });
+});
