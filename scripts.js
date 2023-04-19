@@ -5,7 +5,7 @@ const weatherDetails = document.querySelector(".weather-details");
 const error404 = document.querySelector(".not-found");
 
 search.addEventListener("click", () => {
-  const APIKey = "a5d9781f30d813a1295f5385f15e4be4";
+  const APIKey = "a5d9781f30d813a1295f5385f15e4be4"; // klucz api
   const city = document.querySelector(".search-box input").value;
 
   if (city === "") return;
